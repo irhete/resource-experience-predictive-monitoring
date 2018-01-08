@@ -11,8 +11,9 @@ def ent(data, col):
     entropy = stats.entropy(p_data)  # input probabilities to get the entropy 
     return entropy
 
-def get_prev_resource(group):
+def get_prev_resource_and_event_nr(group):
     group[handoff_col] = group[resource_col].shift(1)
+    group["event_nr"] = range(1, len(group)+1)
     return(group)
 
 def extract_experience(gr):
@@ -55,10 +56,22 @@ def extract_experience(gr):
     group["polarity_current_handoff"] = 0
     group["polarity_current_handoff_recent"] = 0
     
-    for idx, row in group.iterrows():
-        #cases[row["Case ID"]] += 1
-        all_prev_exp = group[group[timestamp_col] <= row[timestamp_col]]
-        recent_prev_exp = group[(group[timestamp_col] <= row[timestamp_col]) & ((row[timestamp_col] - group[timestamp_col]) / np.timedelta64(1, 'M') < recent_months)]
+    start_idx = 0
+    start_time = group.iloc[0][timestamp_col]
+    idx = 0
+    
+    for _, row in group.iterrows():
+        if row["event_nr"] > max_events:
+            idx += 1
+            continue
+        
+        while (row[timestamp_col] - start_time).days > recent_days:
+            start_idx += 1
+            start_time = group.iloc[start_idx][timestamp_col]
+            
+        all_prev_exp = group.iloc[:(idx+1)]
+        recent_prev_exp = group.iloc[start_idx:(idx+1)]
+        idx += 1
         
         n_tasks = len(all_prev_exp)
         n_tasks_recent = len(recent_prev_exp)
@@ -75,9 +88,9 @@ def extract_experience(gr):
         ent_handoff = ent(all_prev_exp, handoff_col)
         ent_handoff_recent = ent(recent_prev_exp, handoff_col)
         
-        tmp = all_prev_exp.groupby(case_id_col).first()[label_col].value_counts()
+        tmp = all_prev_exp[all_prev_exp.event_nr==1][label_col].value_counts()
         polarity_case = (0 if pos_label not in tmp else tmp[pos_label]) / n_cases
-        tmp = recent_prev_exp.groupby(case_id_col).first()[label_col].value_counts()
+        tmp = recent_prev_exp[recent_prev_exp.event_nr==1][label_col].value_counts()
         polarity_case_recent = (0 if pos_label not in tmp else tmp[pos_label]) / n_tasks_recent
         tmp = all_prev_exp[label_col].value_counts()
         polarity_tasks = (0 if pos_label not in tmp else tmp[pos_label]) / n_tasks
@@ -100,13 +113,13 @@ def extract_experience(gr):
         ratio_current_handoff = n_current_handoff / n_tasks
         ratio_current_handoff_recent = n_current_handoff_recent / n_tasks_recent
         
-        tmp = all_prev_exp[all_prev_exp[activity_col] == row[activity_col]].groupby(case_id_col).first()[label_col].value_counts()
+        tmp = all_prev_exp[all_prev_exp[activity_col] == row[activity_col]].drop_duplicates(subset=[case_id_col])[label_col].value_counts()
         polarity_current_act = (0 if pos_label not in tmp else tmp[pos_label]) / n_current_act
-        tmp = recent_prev_exp[recent_prev_exp[activity_col] == row[activity_col]].groupby(case_id_col).first()[label_col].value_counts()
+        tmp = recent_prev_exp[recent_prev_exp[activity_col] == row[activity_col]].drop_duplicates(subset=[case_id_col])[label_col].value_counts()
         polarity_current_act_recent = (0 if pos_label not in tmp else tmp[pos_label]) / n_current_act_recent
-        tmp = all_prev_exp[all_prev_exp[handoff_col] == row[handoff_col]].groupby(case_id_col).first()[label_col].value_counts()
+        tmp = all_prev_exp[all_prev_exp[handoff_col] == row[handoff_col]].drop_duplicates(subset=[case_id_col])[label_col].value_counts()
         polarity_current_handoff = (0 if pos_label not in tmp else tmp[pos_label]) / n_current_handoff
-        tmp = recent_prev_exp[recent_prev_exp[handoff_col] == row[handoff_col]].groupby(case_id_col).first()[label_col].value_counts()
+        tmp = recent_prev_exp[recent_prev_exp[handoff_col] == row[handoff_col]].drop_duplicates(subset=[case_id_col])[label_col].value_counts()
         polarity_current_handoff_recent = (0 if pos_label not in tmp else tmp[pos_label]) / n_current_handoff_recent
         
         group = group.set_value(idx, "n_tasks", n_tasks)
@@ -153,6 +166,13 @@ def extract_experience(gr):
 dataset = argv[1]
 output_dir = argv[2]
 
+if "hospital_billing" in dataset:
+    max_events = 10
+elif "bpic2017" in dataset:
+    max_events = 20
+else:
+    max_events = 40
+
 timestamp_col = dataset_confs.timestamp_col[dataset]
 case_id_col = dataset_confs.case_id_col[dataset]
 activity_col = dataset_confs.activity_col[dataset]
@@ -162,18 +182,18 @@ label_col = dataset_confs.label_col[dataset]
 pos_label = dataset_confs.pos_label[dataset]
 filename = dataset_confs.filename[dataset]
 
-recent_months = 3
+recent_days = 90
 
 data = pd.read_csv(filename, sep=";")
 data[timestamp_col] = pd.to_datetime(data[timestamp_col])
 
-data = data.sort_values(timestamp_col, ascending=True, kind="mergesort").groupby(case_id_col).apply(get_prev_resource)
+data = data.sort_values(timestamp_col, ascending=True, kind="mergesort").groupby(case_id_col).apply(get_prev_resource_and_event_nr)
 data[handoff_col] = data[handoff_col].fillna("first")
 
 start = time.time()
-dt_with_exp = data.sort_values('time:timestamp',
+data = data.sort_values(timestamp_col,
                                ascending=True,
-                               kind="mergesort").groupby('org:group').apply(extract_experience)
+                               kind="mergesort").groupby(resource_col).apply(extract_experience)
 print(time.time() - start)
 
 data.to_csv(os.path.join(output_dir, os.path.basename(filename)), sep=";", index=False)

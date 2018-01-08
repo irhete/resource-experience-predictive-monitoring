@@ -13,77 +13,32 @@ dynamic_num_cols = {}
 static_num_cols = {}
 filename = {}
 
-logs_dir = "/home/irene/Repos/predictive-monitoring-benchmark/labeled_logs_csv_processed"
+logs_dir = "data"
 
 #### Traffic fines settings ####
 
 for formula in range(1,3):
-    dataset = "traffic_fines_%s"%formula
+    ds = "traffic_fines_%s"%formula
+    for suffix in ["", "_exp"]:
+        dataset = ds + suffix
     
-    filename[dataset] = os.path.join(logs_dir, "traffic_fines_%s.csv"%formula)
-    
-    case_id_col[dataset] = "Case ID"
-    activity_col[dataset] = "Activity"
-    resource_col[dataset] = "Resource"
-    timestamp_col[dataset] = "Complete Timestamp"
-    label_col[dataset] = "label"
-    pos_label[dataset] = "deviant"
-    neg_label[dataset] = "regular"
+        filename[dataset] = os.path.join(logs_dir, "traffic_fines_%s.csv"%formula)
 
-    # features for classifier
-    dynamic_cat_cols[dataset] = ["Activity", "Resource", "lastSent", "notificationType", "dismissal"]
-    static_cat_cols[dataset] = ["article", "vehicleClass"]
-    dynamic_num_cols[dataset] = ["expense", "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
-    static_num_cols[dataset] = ["amount", "points"]
+        case_id_col[dataset] = "Case ID"
+        activity_col[dataset] = "Activity"
+        resource_col[dataset] = "Resource"
+        timestamp_col[dataset] = "Complete Timestamp"
+        label_col[dataset] = "label"
+        pos_label[dataset] = "deviant"
+        neg_label[dataset] = "regular"
+
+        # features for classifier
+        dynamic_cat_cols[dataset] = ["Activity", "Resource", "lastSent", "notificationType", "dismissal"]
+        static_cat_cols[dataset] = ["article", "vehicleClass"]
+        dynamic_num_cols[dataset] = ["expense", "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
+        static_num_cols[dataset] = ["amount", "points"]
         
-
-#### Sepsis Cases settings ####
-datasets = ["sepsis_cases_%s" % i for i in range(1, 5)]
-
-for dataset in datasets:
-    
-    filename[dataset] = os.path.join(logs_dir, "%s.csv" % dataset)
-
-    case_id_col[dataset] = "Case ID"
-    activity_col[dataset] = "Activity"
-    resource_col[dataset] = "org:group"
-    timestamp_col[dataset] = "time:timestamp"
-    label_col[dataset] = "label"
-    pos_label[dataset] = "deviant"
-    neg_label[dataset] = "regular"
-
-    # features for classifier
-    dynamic_cat_cols[dataset] = ["Activity", 'org:group'] # i.e. event attributes
-    static_cat_cols[dataset] = ['Diagnose', 'DiagnosticArtAstrup', 'DiagnosticBlood', 'DiagnosticECG',
-                       'DiagnosticIC', 'DiagnosticLacticAcid', 'DiagnosticLiquor',
-                       'DiagnosticOther', 'DiagnosticSputum', 'DiagnosticUrinaryCulture',
-                       'DiagnosticUrinarySediment', 'DiagnosticXthorax', 'DisfuncOrg',
-                       'Hypotensie', 'Hypoxie', 'InfectionSuspected', 'Infusion', 'Oligurie',
-                       'SIRSCritHeartRate', 'SIRSCritLeucos', 'SIRSCritTachypnea',
-                       'SIRSCritTemperature', 'SIRSCriteria2OrMore'] # i.e. case attributes that are known from the start
-    dynamic_num_cols[dataset] = ['CRP', 'LacticAcid', 'Leucocytes', "hour", "weekday", "month", "timesincemidnight", "timesincelastevent", "timesincecasestart"]#, "event_nr", "open_cases"]
-    static_num_cols[dataset] = ['Age']
-
-
-#### Production log settings ####
-dataset = "production"
-
-filename[dataset] = os.path.join(logs_dir, "Production.csv")
-
-case_id_col[dataset] = "Case ID"
-activity_col[dataset] = "Activity"
-resource_col[dataset] = "Resource"
-timestamp_col[dataset] = "Complete Timestamp"
-label_col[dataset] = "label"
-neg_label[dataset] = "regular"
-pos_label[dataset] = "deviant"
-
-# features for classifier
-static_cat_cols[dataset] = ["Part_Desc_", "Rework"]
-static_num_cols[dataset] = ["Work_Order_Qty"]
-dynamic_cat_cols[dataset] = ["Activity", "Resource", "Report_Type", "Resource.1"]
-dynamic_num_cols[dataset] = ["Qty_Completed", "Qty_for_MRB", "activity_duration", "hour", "weekday", "month", "timesincemidnight", "timesincelastevent", "timesincecasestart", "event_nr", "open_cases"]
-
+        
 #### BPIC2017 settings ####
 
 bpic2017_dict = {"bpic2017_cancelled": "BPIC17_O_Cancelled.csv",
@@ -91,29 +46,31 @@ bpic2017_dict = {"bpic2017_cancelled": "BPIC17_O_Cancelled.csv",
                  "bpic2017_refused": "BPIC17_O_Refused.csv"
                 }
 
-for dataset, fname in bpic2017_dict.items():
+for ds, fname in bpic2017_dict.items():
+    for suffix in ["", "_exp"]:
+        dataset = ds + suffix
 
-    filename[dataset] = os.path.join(logs_dir, fname)
+        filename[dataset] = os.path.join(logs_dir, fname)
 
-    case_id_col[dataset] = "Case ID"
-    activity_col[dataset] = "Activity"
-    resource_col[dataset] = 'org:resource'
-    timestamp_col[dataset] = 'time:timestamp'
-    label_col[dataset] = "label"
-    neg_label[dataset] = "regular"
-    pos_label[dataset] = "deviant"
+        case_id_col[dataset] = "Case ID"
+        activity_col[dataset] = "Activity"
+        resource_col[dataset] = 'org:resource'
+        timestamp_col[dataset] = 'time:timestamp'
+        label_col[dataset] = "label"
+        neg_label[dataset] = "regular"
+        pos_label[dataset] = "deviant"
 
-    # features for classifier
-    dynamic_cat_cols[dataset] = ["Activity", 'org:resource', 'Action', 'EventOrigin', 'lifecycle:transition',
-                                "Accepted", "Selected"] 
-    static_cat_cols[dataset] = ['ApplicationType', 'LoanGoal']
-    dynamic_num_cols[dataset] = ['FirstWithdrawalAmount', 'MonthlyCost', 'NumberOfTerms', 'OfferedAmount', 'CreditScore',  "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
-    static_num_cols[dataset] = ['RequestedAmount']
+        # features for classifier
+        dynamic_cat_cols[dataset] = ["Activity", 'org:resource', 'Action', 'EventOrigin', 'lifecycle:transition',
+                                    "Accepted", "Selected"] 
+        static_cat_cols[dataset] = ['ApplicationType', 'LoanGoal']
+        dynamic_num_cols[dataset] = ['FirstWithdrawalAmount', 'MonthlyCost', 'NumberOfTerms', 'OfferedAmount', 'CreditScore',  "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
+        static_num_cols[dataset] = ['RequestedAmount']
     
     
 #### Hospital billing settings ####
 for i in range(1, 7):
-    for suffix in ["", "_sample10000", "_sample30000"]:
+    for suffix in ["", "_exp"]:
         dataset = "hospital_billing_%s%s" % (i, suffix)
 
         filename[dataset] = os.path.join(logs_dir, "hospital_billing_%s%s.csv" % (i, suffix))
@@ -148,20 +105,41 @@ bpic2012_dict = {"bpic2012_cancelled": "bpic2012_O_CANCELLED-COMPLETE.csv",
                  "bpic2012_declined": "bpic2012_O_DECLINED-COMPLETE.csv"
                 }
 
-for dataset, fname in bpic2012_dict.items():
+for ds, fname in bpic2012_dict.items():
+    for suffix in ["", "_exp"]:
+        dataset = ds + suffix
 
-    filename[dataset] = os.path.join(logs_dir, fname)
+        filename[dataset] = os.path.join(logs_dir, fname)
 
-    case_id_col[dataset] = "Case ID"
-    activity_col[dataset] = "Activity"
-    resource_col[dataset] = "Resource"
-    timestamp_col[dataset] = "Complete Timestamp"
-    label_col[dataset] = "label"
-    neg_label[dataset] = "regular"
-    pos_label[dataset] = "deviant"
+        case_id_col[dataset] = "Case ID"
+        activity_col[dataset] = "Activity"
+        resource_col[dataset] = "Resource"
+        timestamp_col[dataset] = "Complete Timestamp"
+        label_col[dataset] = "label"
+        neg_label[dataset] = "regular"
+        pos_label[dataset] = "deviant"
 
-    # features for classifier
-    dynamic_cat_cols[dataset] = ["Activity", "Resource"]
-    static_cat_cols[dataset] = []
-    dynamic_num_cols[dataset] = ["hour", "weekday", "month", "timesincemidnight", "timesincelastevent", "timesincecasestart", "event_nr", "open_cases"]
-    static_num_cols[dataset] = ['AMOUNT_REQ']
+        # features for classifier
+        dynamic_cat_cols[dataset] = ["Activity", "Resource"]
+        static_cat_cols[dataset] = []
+        dynamic_num_cols[dataset] = ["hour", "weekday", "month", "timesincemidnight", "timesincelastevent", "timesincecasestart", "event_nr", "open_cases"]
+        static_num_cols[dataset] = ['AMOUNT_REQ']
+
+
+# add resource experience columns
+for dataset in dynamic_num_cols.keys():
+    if "_exp" in dataset:
+        dynamic_num_cols[dataset] += ['n_tasks',
+                                      'n_tasks_recent', 'n_cases', 'n_cases_recent', 'n_acts',
+                                      'n_acts_recent', 'n_handoffs', 'n_handoffs_recent', 'ent_act',
+                                      'ent_act_recent', 'ent_case', 'ent_case_recent', 'ent_handoff',
+                                      'ent_handoff_recent', 'polarity_case', 'polarity_case_recent',
+                                      'polarity_tasks', 'polarity_tasks_recent', 'ratio_act_case',
+                                      'ratio_act_case_recent', 'n_current_case', 'n_current_case_recent',
+                                      'n_current_act', 'n_current_act_recent', 'n_current_handoff',
+                                      'n_current_handoff_recent', 'ratio_current_case',
+                                      'ratio_current_case_recent', 'ratio_current_act',
+                                      'ratio_current_act_recent', 'ratio_current_handoff',
+                                      'ratio_current_handoff_recent', 'polarity_current_act',
+                                      'polarity_current_act_recent', 'polarity_current_handoff',
+                                      'polarity_current_handoff_recent']
