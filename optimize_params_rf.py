@@ -45,14 +45,8 @@ outfile = os.path.join(home_dir, results_dir, "val_results_%s_%s_%s.csv"%(cls_me
 train_ratio = 0.8
 random_state = 22
 fillna = True
-n_min_cases_in_bucket = 30
 
 cls_params_names = ['n_estimators', 'max_features']
-
-def loguniform(low=0, high=1):
-    val = np.exp(np.random.uniform(0, 1, None))
-    scaled_val = (((val - np.exp(0)) * (high - low)) / (np.exp(1) - np.exp(0))) + low
-    return scaled_val
 
 ##### MAIN PART ######    
 with open(outfile, 'w') as fout:
