@@ -1,5 +1,5 @@
-# resource-experience-predictive-monitoring
-Modeling resource experience for predictive business process monitoring
+# Resource experience in predictive business process monitoring
+This repository contains scripts for modeling resource experience as inter-case features for outcome-oriented predictive business process monitoring.
 
 ## Requirements   
 The code is written in Python 3.6. Although not tested, it should work with any version of Python 3. The following Python libraries are required to run the code: 
@@ -24,7 +24,7 @@ For each dataset, run:
 * _dataset_name_ - the name of the dataset, should correspond to the settings specified in `dataset_confs.py`.
 * _output_dir_ - name of the output directory to write the datasets enriched with resource information.
 
-#### 2. Hyperparameter optimization
+#### 2. Hyperparameter optimization (optional)
 The hyperparameters of random forest are tuned using cross-validation with grid search, i.e. for each dataset and method, different values of max_features are tested and the configuration that yields the highest AUC is chosen.
 
 2.1. Testing different parameter configurations.
@@ -53,10 +53,10 @@ The arguments to the scripts are:
 2. traffic_fines_1_exp - uses (additionally) all columns related to resource experience.
 3. traffic_fines_1_act_freqs - uses basic columns + frequencies of activities a resource has performed.
 4. traffic_fines_1_act_freqs_norm - uses basic columns + normalized frequencies of activities a resource has performed.
-5. traffic_fines_1_exp_no_res / traffic_fines_1_act_freqs_no_res, traffic_fines_1_act_freqs_norm_no_res - excludes the resource id column.
+5. *_no_res (e.g. traffic_fines_1_act_freqs_no_res) - excludes the resource id column.
 * _cls_method_ - rf or xgb.
 * _results_dir_ - the name of the directory where the predictions will be written.
-* _optimal_params_filename_ - the name of the file where the optimal parameters have been saved. Use "None" if fixed parameter should be used (hard-coded in the script).
+* _optimal_params_filename_ - the name of the file where the optimal parameters have been saved. Use "None" if fixed parameters should be used (hard-coded in the script).
 
 #### 4. Analyis and plotting of the final results
 
