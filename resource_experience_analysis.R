@@ -62,12 +62,16 @@ data$exp[data$exp=="wo_pol_res"] <- "no_polarity_no_res"
 head(data)
 
 # plot results XGBoost
+png("/home/irene/Dropbox/resource-experience-predictive-monitoring/results_xgboost.png", height=900, width=1300)
 ggplot(subset(data, metric=="auc" & cls=="results_xgb"), aes(x=nr_events, y=score, color=exp)) + geom_point() + geom_line() +
   theme_bw(base_size=32) + theme(legend.position="top", legend.title=element_text("Resource experience")) + facet_wrap(.~dataset, scales="free", ncol=4)
+dev.off()
 
 # plot results random forest
+png("/home/irene/Dropbox/resource-experience-predictive-monitoring/results_rf.png", height=900, width=1300)
 ggplot(subset(data, metric=="auc" & cls=="rf"), aes(x=nr_events, y=score, color=exp)) + geom_point() + geom_line() +
   theme_bw(base_size=32) + theme(legend.position="top", legend.title=element_text("Resource experience")) + facet_wrap(.~dataset, scales="free", ncol=4)
+dev.off()
 
 
 ### Feature importances ###
