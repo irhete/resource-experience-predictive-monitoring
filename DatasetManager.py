@@ -16,6 +16,7 @@ class DatasetManager:
         
         self.case_id_col = dataset_confs.case_id_col[self.dataset_name]
         self.activity_col = dataset_confs.activity_col[self.dataset_name]
+        self.resource_col = dataset_confs.resource_col[self.dataset_name]
         self.timestamp_col = dataset_confs.timestamp_col[self.dataset_name]
         self.label_col = dataset_confs.label_col[self.dataset_name]
         self.pos_label = dataset_confs.pos_label[self.dataset_name]
@@ -36,8 +37,10 @@ class DatasetManager:
 
         data = pd.read_csv(dataset_confs.filename[self.dataset_name], sep=";", dtype=dtypes)
         data[self.timestamp_col] = pd.to_datetime(data[self.timestamp_col])
-
-        return data
+        
+        data[self.dynamic_num_cols] = data[self.dynamic_num_cols].fillna(0)
+        
+        return data.dropna()
 
 
     def split_data(self, data, train_ratio):  
@@ -55,6 +58,7 @@ class DatasetManager:
     def split_data_strict(self, data, train_ratio, split="temporal"):  
         # split into train and test using temporal split and discard events that overlap the periods
         data = data.sort_values(self.sorting_cols, ascending=True, kind='mergesort')
+        
         grouped = data.groupby(self.case_id_col)
         start_timestamps = grouped[self.timestamp_col].min().reset_index()
         start_timestamps = start_timestamps.sort_values(self.timestamp_col, ascending=True, kind='mergesort')
