@@ -17,12 +17,13 @@ import ClassifierFactory
 import BucketFactory
 from DatasetManager import DatasetManager
 
-dataset_ref = argv[1]
+dataset_name = argv[1]
+results_dir = argv[2]
+
 bucket_encoding = "agg"
 bucket_method = "single"
 cls_encoding = "agg"
 cls_method = "rf"
-results_dir = argv[2]
 
 method_name = "%s_%s"%(bucket_method, cls_encoding)
 
@@ -31,20 +32,15 @@ home_dir = ""
 if not os.path.exists(os.path.join(home_dir, results_dir)):
     os.makedirs(os.path.join(home_dir, results_dir))
 
-dataset_ref_to_datasets = {
-    "sepsis_cases": ["sepsis_cases_1", "sepsis_cases_2", "sepsis_cases_4"]
-}
-
 encoding_dict = {
     "laststate": ["static", "last"],
     "agg": ["static", "agg"],
     "index": ["static", "index"],
     "combined": ["static", "last", "agg"]}
     
-datasets = [dataset_ref] if dataset_ref not in dataset_ref_to_datasets else dataset_ref_to_datasets[dataset_ref]
 methods = encoding_dict[cls_encoding]
 
-outfile = os.path.join(home_dir, results_dir, "val_results_%s_%s_%s.csv"%(cls_method, method_name, dataset_ref)) 
+outfile = os.path.join(home_dir, results_dir, "val_results_%s_%s_%s.csv"%(cls_method, method_name, dataset_name)) 
 
 train_ratio = 0.8
 random_state = 22
@@ -71,16 +67,17 @@ with open(outfile, 'w') as fout:
         data = dataset_manager.read_dataset()
         train_all, _ = dataset_manager.split_data_strict(data, train_ratio)
         
-         # consider prefix lengths until 90% of positive cases have finished
+        # consider prefix lengths until 90% of positive cases have finished
         min_prefix_length = 1
-        #if "traffic_fines" in dataset_name:
-        #    max_prefix_length = 10
+        if "traffic_fines" in dataset_name:
+            max_prefix_length = 10
         if "bpic2017" in dataset_name:
-            max_prefix_length = min(20, dataset_manager.get_pos_case_length_quantile(data, 0.95))
+            max_prefix_length = min(20, dataset_manager.get_pos_case_length_quantile(data, 0.90))
         else:
-            max_prefix_length = min(40, dataset_manager.get_pos_case_length_quantile(data, 0.95))
+            max_prefix_length = min(40, dataset_manager.get_pos_case_length_quantile(data, 0.90))
         del data
         
+        # cross-validation
         part = 0
         for train, test in dataset_manager.get_stratified_split_generator(train_all, n_splits=5):
             part += 1
@@ -107,10 +104,6 @@ with open(outfile, 'w') as fout:
             print("Bucketing prefixes...")
             bucketer = BucketFactory.get_bucketer(bucket_method, **bucketer_args)
             bucket_assignments_train = bucketer.fit_predict(dt_train_prefixes)
-
-            #for i in range(n_iter):
-            #    n_estimators = np.random.randint(150, 1000)
-            #    max_features = loguniform(0.01, 0.9)
 
             for max_features in [0.1, 0.25, 0.5, 0.75]:
                 params = {'n_estimators': 500,

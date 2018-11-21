@@ -13,30 +13,29 @@ dynamic_num_cols = {}
 static_num_cols = {}
 filename = {}
 
-logs_dir = "data"
+logs_dir = "data_with_exp"
 
 #### Traffic fines settings ####
 
-for formula in range(1,3):
-    ds = "traffic_fines_%s"%formula
-    for suffix in ["", "_exp"]:
-        dataset = ds + suffix
-    
-        filename[dataset] = os.path.join(logs_dir, "traffic_fines_%s.csv"%formula)
+ds = "traffic_fines_1"
+for suffix in ["", "_exp"]:
+    dataset = ds + suffix
 
-        case_id_col[dataset] = "Case ID"
-        activity_col[dataset] = "Activity"
-        resource_col[dataset] = "Resource"
-        timestamp_col[dataset] = "Complete Timestamp"
-        label_col[dataset] = "label"
-        pos_label[dataset] = "deviant"
-        neg_label[dataset] = "regular"
+    filename[dataset] = os.path.join(logs_dir, "traffic_fines_1.csv")
 
-        # features for classifier
-        dynamic_cat_cols[dataset] = ["Activity", "Resource", "lastSent", "notificationType", "dismissal"]
-        static_cat_cols[dataset] = ["article", "vehicleClass"]
-        dynamic_num_cols[dataset] = ["expense", "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
-        static_num_cols[dataset] = ["amount", "points"]
+    case_id_col[dataset] = "Case ID"
+    activity_col[dataset] = "Activity"
+    resource_col[dataset] = "Resource"
+    timestamp_col[dataset] = "Complete Timestamp"
+    label_col[dataset] = "label"
+    pos_label[dataset] = "deviant"
+    neg_label[dataset] = "regular"
+
+    # features for classifier
+    dynamic_cat_cols[dataset] = ["Activity", "Resource", "lastSent", "notificationType", "dismissal"]
+    static_cat_cols[dataset] = ["article", "vehicleClass"]
+    dynamic_num_cols[dataset] = ["expense", "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
+    static_num_cols[dataset] = ["amount", "points"]
         
         
 #### BPIC2017 settings ####
@@ -69,7 +68,7 @@ for ds, fname in bpic2017_dict.items():
     
     
 #### Hospital billing settings ####
-for i in range(1, 7):
+for i in range(2, 4):
     for suffix in ["", "_exp"]:
         dataset = "hospital_billing_%s%s" % (i, suffix)
 
