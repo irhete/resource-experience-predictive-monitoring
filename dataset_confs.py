@@ -66,37 +66,6 @@ for ds, fname in bpic2017_dict.items():
         dynamic_num_cols[dataset] = ['FirstWithdrawalAmount', 'MonthlyCost', 'NumberOfTerms', 'OfferedAmount', 'CreditScore',  "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
         static_num_cols[dataset] = ['RequestedAmount']
     
-    
-#### Hospital billing settings ####
-for i in range(2, 4):
-    for suffix in ["", "_exp"]:
-        dataset = "hospital_billing_%s%s" % (i, suffix)
-
-        filename[dataset] = os.path.join(logs_dir, "hospital_billing_%s.csv" % i)
-
-        case_id_col[dataset] = "Case ID"
-        activity_col[dataset] = "Activity"
-        resource_col[dataset] = "Resource"
-        timestamp_col[dataset] = "Complete Timestamp"
-        label_col[dataset] = "label"
-        neg_label[dataset] = "regular"
-        pos_label[dataset] = "deviant"
-
-        if i == 1:
-            neg_label[dataset] = "deviant"
-            pos_label[dataset] = "regular"
-
-        # features for classifier
-        dynamic_cat_cols[dataset] = ["Activity", 'Resource', 'actOrange', 'actRed', 'blocked', 'caseType', 'diagnosis', 'flagC', 'flagD', 'msgCode', 'msgType', 'state', 'version']#, 'isCancelled', 'isClosed', 'closeCode'] 
-        static_cat_cols[dataset] = ['speciality']
-        dynamic_num_cols[dataset] = ['msgCount', "timesincelastevent", "timesincecasestart", "timesincemidnight", "event_nr", "month", "weekday", "hour", "open_cases"]
-        static_num_cols[dataset] = []
-
-        if i == 1: # label is created based on isCancelled attribute
-            dynamic_cat_cols[dataset] = [col for col in dynamic_cat_cols[dataset] if col != "isCancelled"]
-        elif i == 2:
-            dynamic_cat_cols[dataset] = [col for col in dynamic_cat_cols[dataset] if col != "isClosed"]
-            
             
 #### BPIC2012 settings ####
 bpic2012_dict = {"bpic2012_cancelled": "bpic2012_O_CANCELLED-COMPLETE.csv",
